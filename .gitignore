@@ -1,0 +1,4 @@
+example*
+*.swp
+node_modules
+integrations.json

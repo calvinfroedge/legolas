@@ -1,0 +1,22 @@
+{
+  "name": "oauth-integrations-test",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/calvinfroedge/oauth-integrations-test.git"
+  },
+  "dependencies": {
+    "engine.io": "^1.5.1",
+    "express": "^4.12.4",
+    "express-session": "^1.11.2",
+    "jade": "^1.10.0",
+    "passport": "0.2.2",
+    "passport-oauth1": "1.0.1",
+    "passport-oauth2": "1.1.2"
+  },
+  "engines": {
+    "node": "0.10.36"
+  },
+  "scripts": {},
+  "main": "index.js"
+}
