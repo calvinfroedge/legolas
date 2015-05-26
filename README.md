@@ -142,7 +142,7 @@ html
     - }
     script(src="//code.jquery.com/jquery-2.1.4.min.js")
     script(src="/engine.io-client.js")
-    script(src="/client.js"
+    script(src="/client.js")
 ```
 
 ## Client side JS
