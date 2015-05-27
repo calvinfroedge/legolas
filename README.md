@@ -21,7 +21,7 @@ Legolas makes it super simple to add integrations, give updates to your client v
 ## Disclaimers
 
 - You'll need to deal with how you store / interact with OAuth details once you get them (for now, anyway)
-- It's a good idea to think about the memory implications
+- It's a good idea to think about the memory implications of storing session and socket data. Consider using Redis or similar for session storage.
 
 ## Example configuration file
 
@@ -142,7 +142,7 @@ html
     - }
     script(src="//code.jquery.com/jquery-2.1.4.min.js")
     script(src="/engine.io-client.js")
-    script(src="/client.js"
+    script(src="/client.js")
 ```
 
 ## Client side JS
