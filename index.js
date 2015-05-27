@@ -47,22 +47,21 @@ module.exports = function(app, baseUrl, integrations, appServer, socketServer){
     app.get(route+'/callback', 
       passport.authenticate(provider, { failureRedirect: route+'/error' }),
       function(req, res) {
-        //Save this so we can reference it when ready
-        req.session.oauths = req.session.oauths || {};
-        req.session.oauths[provider] = req.user[provider];
-        console.log('oauth data in server for', Object.keys(req.session.oauths));
+        //Reference to socket client, save data to use in later requests
+        var client = socketServer.clients[req.session.socket];
+        client.oauths = client.oauths || {}
+        client.oauths[provider] = req.user[provider];
+        console.log('oauth data in server for', Object.keys(client.oauths));
 
         //Notify the client that oauth is complete
         console.log('sending finish message');
-        var client = socketServer.clients[req.session.socket];
         var obj = {oauth: {}};
         obj.oauth[provider] = {complete: true};
-
         client.send(JSON.stringify(obj));
 
         //Callback
         if(onComplete && onComplete[provider]){
-          onComplete[provider](req.session.oauths[provider], req.session, socketServer.clients[req.session.socket]);
+          onComplete[provider](client.oauths[provider], req.session, socketServer.clients[req.session.socket]);
         }
 
         res.send('<script>close();</script>');
