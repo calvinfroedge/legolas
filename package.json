@@ -1,6 +1,6 @@
 {
   "name": "legolas",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": {
     "type": "git",
     "url": "git://github.com/calvinfroedge/legolas.git"
@@ -12,7 +12,7 @@
     "passport-oauth2": "1.1.2"
   },
   "engines": {
-    "node": "0.10.36"
+    "node": ">=0.10.36"
   },
   "scripts": {},
   "main": "index.js"
