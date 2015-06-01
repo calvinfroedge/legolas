@@ -1,13 +1,13 @@
 {
   "name": "legolas",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "repository": {
     "type": "git",
     "url": "git://github.com/calvinfroedge/legolas.git"
   },
   "dependencies": {
     "engine.io": "^1.5.1",
-    "passport": "0.2.2",
+    "passport": "https://github.com/calvinfroedge/passport.git",
     "passport-oauth1": "1.0.1",
     "passport-oauth2": "1.1.2"
   },

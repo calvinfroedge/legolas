@@ -7,12 +7,8 @@ module.exports = function(app, baseUrl, integrations, appServer, socketServer){
     socketServer = engine.attach(appServer);
   }
 
-  var passport = require('passport');
   var OAuth1Strategy = require('passport-oauth1');
   var OAuth2Strategy = require('passport-oauth2');
-
-  app.use(passport.initialize());
-  app.use(passport.session());
 
   /*
    * Were any "oncomplete" handlers registered?
@@ -30,49 +26,55 @@ module.exports = function(app, baseUrl, integrations, appServer, socketServer){
   });
 
   /*
-   * Generic functions to add oauth to app
-   */
-  function addOAuth(protocol, provider){
-    var route = ['/oauth', protocol, provider].join('/');
-
-    app.get(route, passport.authenticate(provider));
-
-    app.get(route+'/error', function(req, res){
-      res.status(500).send('An error has occurred'); 
-    });
-
-    /*
-     * This gets called on complete
-     */
-    app.get(route+'/callback', 
-      passport.authenticate(provider, { failureRedirect: route+'/error' }),
-      function(req, res) {
-        //Reference to socket client, save data to use in later requests
-        var client = socketServer.clients[req.session.socket];
-        client.oauths = client.oauths || {}
-        client.oauths[provider] = req.user[provider];
-        console.log('oauth data in server for', Object.keys(client.oauths));
-
-        //Notify the client that oauth is complete
-        console.log('sending finish message');
-        var obj = {oauth: {}};
-        obj.oauth[provider] = {complete: true};
-        client.send(JSON.stringify(obj));
-
-        //Callback
-        if(onComplete && onComplete[provider]){
-          onComplete[provider](client.oauths[provider], req.session, socketServer.clients[req.session.socket]);
-        }
-
-        res.send('<script>close();</script>');
-      }
-    );
-  }
-
-  /*
    * Build the integrations
    */
   var strategy = function(protocol, provider, opts){
+
+    var Passport = require('passport').Passport;
+    passport = new Passport();
+    app.use(passport.initialize({userProperty: ['oauth', provider].join('.')}));
+    app.use(passport.session());
+    /*
+     * Generic functions to add oauth to app
+     */
+    function addOAuth(protocol, provider){
+      var route = ['/oauth', protocol, provider].join('/');
+
+      app.get(route, passport.authenticate(provider));
+
+      app.get(route+'/error', function(req, res){
+        res.status(500).send('An error has occurred'); 
+      });
+
+      /*
+       * This gets called on complete
+       */
+      app.get(route+'/callback', 
+        passport.authenticate(provider, { failureRedirect: route+'/error' }),
+        function(req, res) {
+          //Notify the client that oauth is complete
+          console.log('sending finish message', 'data was', req.session);
+          var obj = {oauth: {}};
+          obj.oauth[provider] = {complete: true};
+
+          //Reference to socket client, save data to use in later requests
+          if(req.session.socket){
+            var client = socketServer.clients[req.session.socket];
+            client.oauths = client.oauths || {}
+            client.oauths[provider] = req.user[provider];
+            client.send(JSON.stringify(obj));
+          }
+
+          //Callback
+          if(onComplete && onComplete[provider] && req.session.socket){
+            onComplete[provider](client.oauths[provider], req.session, socketServer.clients[req.session.socket]);
+          }
+
+          res.send('<script>close();</script>');
+        }
+      );
+    }
+
     var s = null;
     var sOpts = {};
     var extraOpts = null;
@@ -107,9 +109,6 @@ module.exports = function(app, baseUrl, integrations, appServer, socketServer){
       }
     }
 
-    //Add routes for this integration
-    addOAuth(protocol, provider);
-
     //Add callback for this integration
     passport.use(provider, new s(sOpts, function(t1, t2, profile, done){
       var obj = {};
@@ -122,10 +121,22 @@ module.exports = function(app, baseUrl, integrations, appServer, socketServer){
       }
       obj.profile = profile;
       
-      var store = {}
-      store[provider] = obj;
-      return done(null, store);
+      return done(null, obj);
     }));
+
+    /*
+     * These are used to serialize / deserialize user
+     */
+    passport.serializeUser(function(user, done) {
+      done(null, user);
+    });
+
+    passport.deserializeUser(function(user, done) {
+      done(null, user);
+    });
+
+    //Add routes for this integration
+    addOAuth(protocol, provider);
   }
 
   for(var protocol in integrations){
@@ -134,15 +145,4 @@ module.exports = function(app, baseUrl, integrations, appServer, socketServer){
       strategy(protocol, provider, opts);
     }
   }
-
-  /*
-   * These are used to serialize / deserialize user
-   */
-  passport.serializeUser(function(user, done) {
-    done(null, user);
-  });
-
-  passport.deserializeUser(function(user, done) {
-    done(null, user);
-  });
 }

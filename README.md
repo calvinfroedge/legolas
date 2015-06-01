@@ -12,10 +12,13 @@ Legolas makes it super simple to add integrations, give updates to your client v
 
 <a href="https://www.youtube.com/watch?v=l_LaMguBvXs&feature=youtu.be" target="_blank"><img src="http://img.youtube.com/vi/l_LaMguBvXs/0.jpg" /></a>
 
+## Preserves existing Passport implementations
+After authenticating, you'll have a new key of `oauth.PROVIDER_NAME` in your existing session.
+
 ## How?
-- Each integration you add to your configuration file adds 2 routes to express, such as `/oauth/2.0/mailchimp` and `/oauth/2.0/mailchimp/callback`
+- Each integration you add to your configuration file adds a new route to express, such as `/oauth/2.0/mailchimp`
 - When a new client connects to your app, a socket connection is established and the id of that socket connection is set in the user's session.
-- When a user visits the first route, the OAuth process is handled. It is expected you'll do this in a new tab or via an iframe. Your client code / app state / url will not be affected.
+- When a user visits the first route, the OAuth process is handled. It is expected you'll do this in a new tab. Your client code / app state / url will not be affected.
 - When the OAuth is complete, a socket noficiation is sent from the server to the client, and the session is updated.
 
 ## Disclaimers
