@@ -68,8 +68,14 @@ module.exports = function(app, baseUrl, integrations, appServer, socketServer){
           }
 
           //Callback
-          if(onComplete && onComplete[provider] && req.session.socket){
-            onComplete[provider](client.oauths[userProperty], req.session, socketServer.clients[req.session.socket]);
+          if(onComplete && onComplete[provider]){
+            var args = [req.session.passport[userProperty], req.session];
+
+            if(req.session.socket){
+              args.push(socketServer.clients[req.session.socket]);
+            }
+
+            onComplete[provider].apply(onComplete, args);
           }
 
           res.send('<script>close();</script>');
