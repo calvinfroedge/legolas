@@ -52,6 +52,8 @@ module.exports = function(app, baseUrl, integrations, appServer, socketServer){
       app.get(route+'/callback', 
         passport.authenticate(provider, { failureRedirect: route+'/error' }),
         function(req, res) {
+          var key = ['oauth', provider].join('.');
+
           //Notify the client that oauth is complete
           console.log('sending finish message', 'data was', req.session);
           var obj = {oauth: {}};
@@ -61,13 +63,13 @@ module.exports = function(app, baseUrl, integrations, appServer, socketServer){
           if(req.session.socket){
             var client = socketServer.clients[req.session.socket];
             client.oauths = client.oauths || {}
-            client.oauths[provider] = req.user[provider];
+            client.oauths[provider] = req.user[key];
             client.send(JSON.stringify(obj));
           }
 
           //Callback
           if(onComplete && onComplete[provider] && req.session.socket){
-            onComplete[provider](client.oauths[provider], req.session, socketServer.clients[req.session.socket]);
+            onComplete[provider](client.oauths[key], req.session, socketServer.clients[req.session.socket]);
           }
 
           res.send('<script>close();</script>');
