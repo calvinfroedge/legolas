@@ -21,7 +21,7 @@ module.exports = function(app, baseUrl, integrations, appServer, socketServer){
    */
   app.get('/socket/register/:socketid', function(req, res){
     req.session.socket = req.params.socketid;
-    console.log('socket registered with session', req.session.socket);
+    req.session.save();
     res.status(200).send();
   });
 
@@ -55,7 +55,6 @@ module.exports = function(app, baseUrl, integrations, appServer, socketServer){
         passport.authenticate(provider, { failureRedirect: route+'/error' }),
         function(req, res) {
           //Notify the client that oauth is complete
-          console.log('sending finish message', 'data was', req.session);
           var obj = {oauth: {}};
           obj.oauth[provider] = {complete: true};
 
